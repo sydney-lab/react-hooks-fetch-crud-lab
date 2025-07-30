@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import AdminNavBar from "./AdminNavBar";
-import QuestionForm from "./QuestionForm";
-import QuestionList from "./QuestionList";
+import AdminNavBar from "./components/AdminNavBar";
+import QuestionForm from "./components/QuestionForm";
+import QuestionList from "./components/QuestionList";
 
 function App() {
   const [page, setPage] = useState("List");

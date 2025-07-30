@@ -1,65 +1,87 @@
 import React, { useState } from "react";
 
 function QuestionForm({ onAddQuestion }) {
-  const [prompt, setPrompt] = useState("");
-  const [answer1, setAnswer1] = useState("");
-  const [answer2, setAnswer2] = useState("");
-  const [correctIndex, setCorrectIndex] = useState(0);
+  const [formData, setFormData] = useState({
+    prompt: "",
+    answers: ["", "", "", ""],
+    correctIndex: 0,
+  });
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleChange(event) {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    });
+  }
 
-    const newQuestion = {
-      prompt: prompt,
-      answers: [answer1, answer2],
-      correctIndex: parseInt(correctIndex),
-    };
+  function handleAnswerChange(event) {
+    const index = parseInt(event.target.name);
+    const updatedAnswers = [...formData.answers];
+    updatedAnswers[index] = event.target.value;
+    setFormData({
+      ...formData,
+      answers: updatedAnswers,
+    });
+  }
 
+  function handleSubmit(event) {
+    event.preventDefault();
     fetch("http://localhost:4000/questions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newQuestion),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: formData.prompt,
+        answers: formData.answers,
+        correctIndex: parseInt(formData.correctIndex),
+      }),
     })
-      .then((res) => res.json())
-      .then((data) => {
-        onAddQuestion(data);
-        setPrompt("");
-        setAnswer1("");
-        setAnswer2("");
-        setCorrectIndex(0);
-      });
+      .then((r) => r.json())
+      .then((newQuestion) => onAddQuestion(newQuestion));
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>New Question</h2>
-      <input
-        type="text"
-        placeholder="Question prompt"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Answer 1"
-        value={answer1}
-        onChange={(e) => setAnswer1(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Answer 2"
-        value={answer2}
-        onChange={(e) => setAnswer2(e.target.value)}
-      />
-      <select
-        value={correctIndex}
-        onChange={(e) => setCorrectIndex(e.target.value)}
-      >
-        <option value="0">Answer 1</option>
-        <option value="1">Answer 2</option>
-      </select>
-      <button type="submit">Add Question</button>
-    </form>
+    <section>
+      <h1>New Question</h1>
+      <form data-testid="question-form" onSubmit={handleSubmit}>
+        <label>
+          Prompt:
+          <input
+            type="text"
+            name="prompt"
+            value={formData.prompt}
+            onChange={handleChange}
+          />
+        </label>
+        {formData.answers.map((answer, index) => (
+          <label key={index}>
+            Choice {index + 1}:
+            <input
+              type="text"
+              name={index}
+              value={answer}
+              onChange={handleAnswerChange}
+            />
+          </label>
+        ))}
+        <label>
+          Correct Answer:
+          <select
+            name="correctIndex"
+            value={formData.correctIndex}
+            onChange={handleChange}
+          >
+            {formData.answers.map((answer, index) => (
+              <option key={index} value={index}>
+                {answer}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">Add Question</button>
+      </form>
+    </section>
   );
 }
 
